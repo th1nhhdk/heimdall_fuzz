@@ -51,6 +51,7 @@
 #include "SendFilePartResponse.h"
 #include "SessionSetupPacket.h"
 #include "SessionSetupResponse.h"
+#include "hexdump.h"
 
 // Future versions of libusb will use usb_interface instead of interface.
 #ifndef usb_interface
@@ -616,6 +617,9 @@ bool BridgeManager::SendBulkTransfer(unsigned char *data, int length, int timeou
 	int dataTransferred;
 	int result = libusb_bulk_transfer(deviceHandle, outEndpoint, data, length, &dataTransferred, timeout);
 
+	printf("Inside BridgeManager::SendBulkTransfer\n");
+	hexdump_log(data, length);
+
 	if (result != LIBUSB_SUCCESS && retry)
 	{
 		static const int retryDelay = 250;
@@ -693,6 +697,9 @@ int BridgeManager::ReceiveBulkTransfer(unsigned char *data, int length, int time
 	if (result != LIBUSB_SUCCESS)
 		return (result);
 
+	Interface::Print("Received %d bytes\n", dataTransferred);
+	hexdump_log(data, dataTransferred);
+
 	return (dataTransferred);
 }
 
@@ -761,6 +768,59 @@ bool BridgeManager::ReceivePacket(InboundPacket *packet, int timeout, int emptyT
 	}
 
 	return (unpacked);
+}
+
+bool BridgeManager::SendRawPacket(unsigned char *data, unsigned int datalen, int timeout, int emptyTransferFlags) const
+{
+
+	if (emptyTransferFlags & kEmptyTransferBefore)
+	{
+		if (!SendBulkTransfer(nullptr, 0, kDefaultTimeoutEmptyTransfer, false) && verbose)
+		{
+			Interface::PrintWarning("Empty bulk transfer before sending packet failed. Continuing anyway...\n");
+		}
+	}
+
+	if (!SendBulkTransfer(data, datalen, timeout))
+		return (false);
+
+	if (emptyTransferFlags & kEmptyTransferAfter)
+	{
+		if (!SendBulkTransfer(nullptr, 0, kDefaultTimeoutEmptyTransfer, false) && verbose)
+		{
+			Interface::PrintWarning("Empty bulk transfer after sending packet failed. Continuing anyway...\n");
+		}
+	}
+
+	return (true);
+}
+
+bool BridgeManager::ReceiveRawPacket(unsigned char *data, unsigned int datalen, int timeout, int emptyTransferFlags) const
+{
+	if (emptyTransferFlags & kEmptyTransferBefore)
+	{
+		if (ReceiveBulkTransfer(nullptr, 0, kDefaultTimeoutEmptyTransfer, false) < 0 && verbose)
+		{
+			Interface::PrintWarning("Empty bulk transfer before receiving packet failed. Continuing anyway...\n");
+		}
+	}
+
+	int receivedSize = ReceiveBulkTransfer(data, datalen, timeout);
+
+	if (receivedSize < 0)
+		return (false);
+
+	Interface::Print("Received %d bytes\n", receivedSize);
+
+	if (emptyTransferFlags & kEmptyTransferAfter)
+	{
+		if (ReceiveBulkTransfer(nullptr, 0, kDefaultTimeoutEmptyTransfer, false) < 0 && verbose)
+		{
+			Interface::PrintWarning("Empty bulk transfer after receiving packet failed. Continuing anyway...\n");
+		}
+	}
+
+	return (true);
 }
 
 bool BridgeManager::RequestDeviceType(unsigned int request, int *result) const

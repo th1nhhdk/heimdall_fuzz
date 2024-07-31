@@ -32,6 +32,7 @@ set(HEIMDALL_SOURCE_FILES
     source/DetectAction.cpp
     source/DownloadPitAction.cpp
     source/FlashAction.cpp
+    source/FuzzAction.cpp
     source/HelpAction.cpp
     source/InfoAction.cpp
     source/Interface.cpp

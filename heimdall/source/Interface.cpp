@@ -28,6 +28,7 @@
 #include "DetectAction.h"
 #include "DownloadPitAction.h"
 #include "FlashAction.h"
+#include "FuzzAction.h"
 #include "HelpAction.h"
 #include "InfoAction.h"
 #include "Heimdall.h"
@@ -64,6 +65,7 @@ void populateActionMap(void)
 	actionMap["detect"] = Interface::ActionInfo(&DetectAction::Execute, DetectAction::usage);
 	actionMap["download-pit"] = Interface::ActionInfo(&DownloadPitAction::Execute, DownloadPitAction::usage);
 	actionMap["flash"] = Interface::ActionInfo(&FlashAction::Execute, FlashAction::usage);
+	actionMap["fuzz"] = Interface::ActionInfo(&FuzzAction::Execute, FuzzAction::usage);
 	actionMap["help"] = Interface::ActionInfo(&HelpAction::Execute, HelpAction::usage);
 	actionMap["info"] = Interface::ActionInfo(&InfoAction::Execute, InfoAction::usage);
 	actionMap["print-pit"] = Interface::ActionInfo(&PrintPitAction::Execute, PrintPitAction::usage);

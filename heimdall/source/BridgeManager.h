@@ -157,6 +157,9 @@ namespace Heimdall
 			bool SendPacket(OutboundPacket *packet, int timeout = kDefaultTimeoutSend, int emptyTransferFlags = kEmptyTransferAfter) const;
 			bool ReceivePacket(InboundPacket *packet, int timeout = kDefaultTimeoutReceive, int emptyTransferFlags = kEmptyTransferNone) const;
 
+			bool SendRawPacket(unsigned char *data, unsigned int datalen, int timeout = kDefaultTimeoutSend, int emptyTransferFlags = kEmptyTransferAfter) const;
+			bool ReceiveRawPacket(unsigned char *data, unsigned int datalen, int timeout = kDefaultTimeoutReceive, int emptyTransferFlags = kEmptyTransferNone) const;
+
 			bool RequestDeviceType(unsigned int request, int *result) const;
 
 			bool SendPitData(const libpit::PitData *pitData) const;
